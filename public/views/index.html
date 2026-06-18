@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Attendance Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+
+  <!-- Toast notification -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden transform transition-all duration-300 translate-x-full">
+    <div id="toast-content" class="px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium max-w-sm"></div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 flex flex-col items-center gap-3">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
+      <p id="loading-text" class="text-gray-600 text-sm">Processing...</p>
+    </div>
+  </div>
+
+  <!-- Login Page -->
+  <div id="page-login" class="page">
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-800">Attendance Tracker</h1>
+          <p class="text-gray-500 mt-1">Sign in to mark your attendance</p>
+        </div>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+            <input type="tel" id="login-mobile" maxlength="10" pattern="\d{10}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-lg"
+              placeholder="Enter 10-digit mobile">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">PIN</label>
+            <input type="password" id="login-pin" maxlength="6" pattern="\d{6}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-lg"
+              placeholder="Enter 6-digit PIN">
+          </div>
+          <button type="submit"
+            class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition active:scale-95">
+            Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Dashboard -->
+  <div id="page-employee" class="page hidden">
+    <nav class="bg-white shadow-sm border-b">
+      <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+        <div>
+          <h2 class="font-semibold text-gray-800" id="emp-name">Employee</h2>
+          <p class="text-xs text-gray-500" id="emp-date"></p>
+        </div>
+        <button onclick="logout()" class="text-gray-500 hover:text-red-500 transition p-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
+      <!-- Status Card -->
+      <div id="status-card" class="bg-white rounded-xl shadow-sm border p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <div id="status-dot" class="w-3 h-3 rounded-full bg-gray-400"></div>
+          <span id="status-text" class="text-sm font-medium text-gray-600">Loading...</span>
+        </div>
+        <p id="status-detail" class="text-xs text-gray-400 ml-6"></p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-2 gap-4">
+        <button id="btn-checkin" onclick="startAttendance('checkin')"
+          class="bg-green-500 hover:bg-green-600 text-white rounded-xl p-6 flex flex-col items-center gap-2 transition active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+          <span class="font-semibold text-lg">Check In</span>
+        </button>
+        <button id="btn-checkout" onclick="startAttendance('checkout')"
+          class="bg-red-500 hover:bg-red-600 text-white rounded-xl p-6 flex flex-col items-center gap-2 transition active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          <span class="font-semibold text-lg">Check Out</span>
+        </button>
+      </div>
+
+      <!-- Today's Summary -->
+      <div class="bg-white rounded-xl shadow-sm border p-5">
+        <h3 class="font-semibold text-gray-800 mb-3">Today's Summary</h3>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-gray-500 text-sm">Total Hours</span>
+          <span id="total-hours" class="text-2xl font-bold text-blue-600">0.00</span>
+        </div>
+        <div id="today-records" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Camera Modal -->
+  <div id="camera-modal" class="fixed inset-0 bg-black z-50 hidden flex flex-col">
+    <div class="flex items-center justify-between p-4 bg-black bg-opacity-80">
+      <button onclick="closeCamera()" class="text-white p-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      <span class="text-white font-medium">Take Selfie</span>
+      <div class="w-10"></div>
+    </div>
+    <div class="flex-1 relative">
+      <video id="camera-video" autoplay playsinline class="w-full h-full object-cover"></video>
+      <canvas id="camera-canvas" class="hidden"></canvas>
+    </div>
+    <div class="p-6 bg-black bg-opacity-80 flex justify-center">
+      <button onclick="capturePhoto()"
+        class="w-16 h-16 rounded-full border-4 border-white bg-white bg-opacity-30 hover:bg-opacity-50 transition active:scale-90">
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="page-admin" class="page hidden">
+    <nav class="bg-white shadow-sm border-b">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div>
+          <h2 class="font-semibold text-gray-800">Admin Dashboard</h2>
+          <p class="text-xs text-gray-500" id="admin-date"></p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="showAddEmployee()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+            + Add Employee
+          </button>
+          <button onclick="logout()" class="text-gray-500 hover:text-red-500 transition p-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Employee List -->
+    <div id="admin-employee-list" class="max-w-4xl mx-auto px-4 py-6">
+      <h3 class="font-semibold text-gray-800 mb-4">All Employees</h3>
+      <div id="employee-list" class="space-y-3"></div>
+    </div>
+
+    <!-- Employee Detail -->
+    <div id="admin-employee-detail" class="max-w-4xl mx-auto px-4 py-6 hidden">
+      <button onclick="showEmployeeList()" class="text-blue-600 hover:text-blue-800 text-sm font-medium mb-4 flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to list
+      </button>
+      <div id="detail-header" class="bg-white rounded-xl shadow-sm border p-5 mb-4"></div>
+      <div class="flex items-center gap-3 mb-4">
+        <label class="text-sm font-medium text-gray-700">Month:</label>
+        <select id="detail-month" onchange="loadEmployeeDetail()" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm"></select>
+        <select id="detail-year" onchange="loadEmployeeDetail()" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm"></select>
+      </div>
+      <div id="detail-attendance" class="space-y-3"></div>
+      <div id="detail-monthly-total" class="mt-4 bg-blue-50 rounded-xl p-4 text-center"></div>
+    </div>
+  </div>
+
+  <!-- Add Employee Modal -->
+  <div id="add-employee-modal" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Add New Employee</h3>
+      <form id="add-employee-form" class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+          <input type="text" id="new-emp-name" minlength="2" maxlength="100" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+            placeholder="Enter full name">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+          <input type="tel" id="new-emp-mobile" maxlength="10" pattern="\d{10}" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+            placeholder="10-digit mobile">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">PIN</label>
+          <input type="password" id="new-emp-pin" maxlength="6" pattern="\d{6}" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+            placeholder="6-digit PIN">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeAddEmployee()"
+            class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition text-sm">
+            Cancel
+          </button>
+          <button type="submit"
+            class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition text-sm">
+            Add Employee
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Photo Preview Modal (Admin) -->
+  <div id="photo-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden flex items-center justify-center p-4" onclick="closePhotoModal()">
+    <img id="photo-modal-img" class="max-w-full max-h-full rounded-lg" src="" alt="Attendance photo">
+  </div>
+
+  <script src="/js/compression.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

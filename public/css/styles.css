@@ -1,0 +1,76 @@
+* {
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input[type="tel"],
+input[type="password"],
+input[type="text"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.page {
+  min-height: 100vh;
+}
+
+#camera-video {
+  transform: scaleX(-1);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.toast-show {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.toast-hide {
+  animation: slideOut 0.3s ease forwards;
+}
+
+.record-item {
+  border-left: 3px solid;
+  transition: background-color 0.2s;
+}
+
+.record-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.record-checkin {
+  border-left-color: #22c55e;
+}
+
+.record-checkout {
+  border-left-color: #ef4444;
+}
+
+.photo-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.photo-thumb:hover {
+  transform: scale(1.1);
+}
+
+@media (max-width: 640px) {
+  .attendance-table {
+    font-size: 0.75rem;
+  }
+}
